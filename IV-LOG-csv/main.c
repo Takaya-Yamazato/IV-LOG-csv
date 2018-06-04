@@ -36,8 +36,8 @@ int main(int argc, char *argv[] )
     //ファイルポインタの位置を取得
     fgetpos(fp,&ft);
     file_size = ft;
-    printf("SEEK_ENDのファイルポインタの位置は「%lld」です。file_size/128 = %d\n", file_size, (int)file_size/128);
-//    file_size = 128;
+//    printf("SEEK_ENDのファイルポインタの位置は「%lld」です。file_size/128 = %d\n", file_size, (int)file_size/128);
+
     //    ファイルポインタを先頭まで移動
     fseek(fp,0,SEEK_SET);
 //    //ファイルポインタの位置を取得
