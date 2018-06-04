@@ -5,6 +5,13 @@
 //  Created by Takaya Yamazato on 2018/06/01.
 //  Copyright © 2018年 Takaya Yamazato. All rights reserved.
 //
+//書式    size_t fread( void *buf, size_t size, size_t num, FILE *fp )
+//機能    バイナリファイルを読み込む
+//引数    void *buf : バイナリデータを受け取るバッファ
+//size_t size : データ要素1個のサイズ
+//size_t num : データの個数
+//FILE *fp : ファイル(ストリーム)ポインタ
+//戻り値    成功すると、読み込んだデータの個数を返し、データが無いと、0を返します。
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +47,7 @@ int main(int argc, const char * argv[]) {
         fopen("/Volumes/yamazato/Documents/tmp/IV-LOG-csv/IV-LOG-csv/test.bin", "rb");
         char buff[128];
 //                memset(buff,0,sizeof(char)*16);
+
         for (k=1; k<16; k++){
         fread(buff, sizeof(char)*16, k, fp);
         for (int i = 0; i < 16; i++) {
