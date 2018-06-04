@@ -18,7 +18,7 @@ int main(int argc, char *argv[] )
     int i,k;
     FILE *fp;
     fpos_t ft;
-    long long file_size;
+    unsigned long long file_size;
     
     if(argc<2){
         printf("コマンドの後に１つファイルを指定してください。\n");
@@ -36,7 +36,7 @@ int main(int argc, char *argv[] )
     //ファイルポインタの位置を取得
     fgetpos(fp,&ft);
     file_size = ft;
-//    printf("SEEK_ENDのファイルポインタの位置は「%lld」です。file_size/128 = %d\n", file_size, (int)file_size/128);
+    printf("SEEK_ENDのファイルポインタの位置は「%lld」です。file_size/128 = %d\n", file_size, (int)file_size/128);
 //    file_size = 128;
     //    ファイルポインタを先頭まで移動
     fseek(fp,0,SEEK_SET);
@@ -44,7 +44,7 @@ int main(int argc, char *argv[] )
 //    fgetpos(fp,&ft);
 //    printf("SEEK_SETのファイルポインタの位置は「%lld」です。\n",ft);
     
-    for ( k = 0 ; k < (int)file_size/128 ; ++k ){
+    for ( k = 0 ; k < (unsigned long long)file_size/128 ; ++k ){
         //    for ( k = 0 ;  ; k = k+128 ){
         fseek(fp,k*128,SEEK_SET);
         //ファイルポインタの位置を取得
