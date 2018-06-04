@@ -32,26 +32,45 @@ int main(int argc, const char * argv[]) {
 
     if (fp != NULL)
     {
-        char test[256];
+        char test[2048];
 
-        for (int i=0; i<256; i++)
+        for (int i=0; i<2048; i++)
         { test[i] = i ;}
 
-        fwrite(test, sizeof(char) * 16, 16, fp);
+        fwrite(test, sizeof(char) * 128, 16, fp);
         fclose(fp);
 
     }
+        fpos_t ft;
+  
+    
     if (fp !=NULL)
     {
 //        fopen("/Users/yamazato/Documents/tmp/IV-LOG-csv/IV-LOG-csv/test.bin", "rb");
         fopen("/Volumes/yamazato/Documents/tmp/IV-LOG-csv/IV-LOG-csv/test.bin", "rb");
-        char buff[128];
+        char buff[2048];
 //                memset(buff,0,sizeof(char)*16);
+        //    ファイルポインタを末尾まで移動
+        fseek(fp,0,SEEK_SET);
+        //ファイルポインタの位置を取得
+        fgetpos(fp,&ft);
+        printf("SEEK_SETのファイルポインタの位置は「%lld」です。\n",ft);
+        //    ファイルポインタを末尾まで移動
+        fseek(fp,0,SEEK_END);
+        //ファイルポインタの位置を取得
+        fgetpos(fp,&ft);
+        printf("SEEK_ENDのファイルポインタの位置は「%lld」です。\n",ft);
+        
+        for (k=0; k<16; k++){
+            //    ファイルポインタを末尾まで移動
+            fseek(fp,k*128,SEEK_SET);
+            //ファイルポインタの位置を取得
+            fgetpos(fp,&ft);
+            printf("現在のファイルポインタの位置は「%lld」です。\n",ft);
 
-        for (k=1; k<16; k++){
-        fread(buff, sizeof(char)*16, k, fp);
-        for (int i = 0; i < 16; i++) {
-            printf("%X\n",  buff[i]);
+        fread(buff, sizeof(char)*128, 16, fp);
+        for (int i = 0; i < 128; i++) {
+            printf("%d-%d %lu %X\n", fgetpos(fp,&ft), i, sizeof(char)*128, buff[i]);
         }
         }
 
@@ -89,6 +108,28 @@ int main(int argc, const char * argv[]) {
 //    return 0;
 //}
 //
+//#include <stdio.h>
+//
+//    int main(void)
+//    {
+//        fpos_t ft;
+//        FILE *fp;
+//
+//
+//        fp = fopen("test.txt","r");
+//
+//        //ファイルポインタを末尾まで移動
+//        fseek(fp,0,SEEK_END);
+//
+//        //ファイルポインタの位置を取得
+//        fgetpos(fp,&ft);
+//
+//        printf("現在のファイルポインタの位置は「%d」です。\n",ft);
+//
+//        fclose(fp);
+//
+//        return 0;
+//    }
 //    // insert code here...
 //    printf("Hello, World!\n");
 //    return 0;
