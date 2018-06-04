@@ -13,7 +13,7 @@ int main(int argc, char *argv[] )
 {
     //    char fileName[128];
     //    int text;
-    unsigned long    c[100000], d[100000], count;
+    unsigned long    c[100000], count;
     char buff[2048];
     int i,k;
     FILE *fp;
@@ -66,24 +66,6 @@ int main(int argc, char *argv[] )
             }
         }/* for( i = 0; i < 128 ; ++i ) */
         
-//    }/* for ( k = 0 ;  ; k = k+128 ){ */
-//    //    ファイルポインタを先頭まで移動
-//    fseek(fp,0,SEEK_SET);
-//
-//    for ( k = 0 ; k < (int)file_size/128 ; ++k ){
-//        for( i = 0; i < 128 ; ++i ){
-////            fseek(fp,k*128+i,SEEK_SET);
-//            c[128*k+i] = fgetc( fp );
-//            printf("\nc[%d,%d] %X %d\n",k,i, c[128*k+i], c[128*k+i]);
-//            if( c[i] == EOF ){
-//                /*         printf("\nbreak point (k+i=%d)\n",k+i);  */
-//                break;
-//            }
-//        }
-//        if( c[i] == EOF ){
-//            /*         printf("\nbreak point (k+i=%d)\n",k+i);  */
-//            break;
-//        }
     
         if((c[38] >> 4) > 9){
 //            if(c[12]==0x02){
