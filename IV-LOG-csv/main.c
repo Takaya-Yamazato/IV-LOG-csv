@@ -2,7 +2,7 @@
 //  main.c
 //  IV-LOG-csv
 //
-//  Created by Takaya Yamazato on 2018/06/01.
+//  Created by Takaya Yamazato on 2018/06/05.
 //  Copyright © 2018年 Takaya Yamazato. All rights reserved.
 //
 
