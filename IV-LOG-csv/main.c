@@ -78,29 +78,29 @@ int main(int argc, char *argv[] )
             /* printf( ", データ長:%d%d%d%d", c[8],c[9],c[10],c[11]); */
                     printf( ",%lu", c[8] << 24 | c[9] << 16 | c[10] << 8 | c[11]);
             /* 車輌種別 1byte 0x00:他車輌，0x02:自車輌，0x01：固定値（路車間）*/
-            /*switch(c[12]) {
-             case 0x00 : printf(",0");
+            switch(c[12]) {
+             case 0x00 : printf(",0 他車輌");
              break;
-             case 0x01 : printf(",1");
+             case 0x01 : printf(",1　路車間");
              break;
-             case 0x02 : printf(",2");
+             case 0x02 : printf(",2　自車輌");
              break;
              default   : printf(",-");
-             }*/
+             }
             /* タイムスタンプ有無 1byte 0x00:タイムスタンプなし，0x01:タイムスタンプあり*/
-            //        switch(c[13]) {
-            //          case 0x00 : printf(",0");
-            //            break;
-            //          case 0x01 : printf(",1");
-            //            break;
-            //          default   : printf(",-");
-            //        }
+                    switch(c[13]) {
+                      case 0x00 : printf(",0　タイムスタンプ無し");
+                        break;
+                      case 0x01 : printf(",1　タイムスタンプあり");
+                        break;
+                      default   : printf(",-");
+                    }
             /* 情報フラグ 1byte bit0: 緊急車両フラグ，bit1~bit7: 予約領域*/
-            /*if( c[14] == 0x00 ) printf(",0");
-             else{printf(",-");}*/
+            if( c[14] == 0x00 ) printf(",0　緊急車両フラグ");
+             else{printf(",-");}
             /* 予約 1byte 予約領域(固定値 0x00) */
-            /*if( c[15] == 0x00 ) printf(",0");
-             else{printf(",-");}*/
+            // if( c[15] == 0x00 ) printf(",0");
+            //   else{printf(",-");}
             
             /* ここから車車間情報 （共通領域管理情報）*/
             /* 共通サービス規格ID 3bit，メッセージID 2bit，バージョン情報 3bit =1byte*/
@@ -133,6 +133,7 @@ int main(int argc, char *argv[] )
             /* GPSデータ変換は以下を参考に
              https://stackoverflow.com/questions/17355604/how-to-convert-gps-longitude-and-latitude-from-hex */
             /* 緯度 4byte */
+            printf(",GPSデータ:");
             printf( "%lf", ( c[28] << 24 | c[29] << 16 | c[30] << 8 | c[31]) * 0.0000001 );
             /* 経度 4byte */
             printf( ",%lf", ( c[32] << 24 | c[33] << 16 | c[34] << 8 | c[35]) * 0.0000001 );
