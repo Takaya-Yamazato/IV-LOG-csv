@@ -112,29 +112,29 @@ int Header_Information(unsigned long *d){
     /* パケット受信時の PC 日時(JST) 8byte 年/月/日/時:分:ミリ秒 */
     printf( "%lu/%lu/%lu/%lu:%lu:%5lu", d[0] << 8 | d[1],d[2],d[3],d[4],d[5],d[6] << 8 | d[7]);
     /* データ長 4byte*/
-    /* printf( ", データ長:%d%d%d%d", d[8],d[9],d[10],d[11]); */
-    printf( ",%lu", d[8] << 24 | d[9] << 16 | d[10] << 8 | d[11]);
+    printf( ", データ長:%lu%lu%lu%lu", d[8],d[9],d[10],d[11]); 
+    //printf( ",%lu", d[8] << 24 | d[9] << 16 | d[10] << 8 | d[11]);
     /* 車輌種別 1byte 0x00:他車輌，0x02:自車輌，0x01：固定値（路車間）*/
-    switch(d[12]) {
-        case 0x00 : printf(",0 他車輌");
-            break;
-        case 0x01 : printf(",1　路車間");
-            break;
-        case 0x02 : printf(",2　自車輌");
-            break;
-        default   : printf(",-");
-    }
+//    switch(d[12]) {
+//        case 0x00 : printf(",0 他車輌,");
+//            break;
+//        case 0x01 : printf(",1　固定値（路車間）,");
+//            break;
+//        case 0x02 : printf(",2　自車輌,");
+//            break;
+//        default   : printf(",-");
+//    }
     /* タイムスタンプ有無 1byte 0x00:タイムスタンプなし，0x01:タイムスタンプあり*/
-    switch(d[13]) {
-        case 0x00 : printf(",0　タイムスタンプ無し");
-            break;
-        case 0x01 : printf(",1　タイムスタンプあり");
-            break;
-        default   : printf(",-");
-    }
+//    switch(d[13]) {
+//        case 0x00 : printf(",0　タイムスタンプ無し");
+//            break;
+//        case 0x01 : printf(",1　タイムスタンプあり");
+//            break;
+//        default   : printf(",-");
+//    }
     /* 情報フラグ 1byte bit0: 緊急車両フラグ，bit1~bit7: 予約領域*/
-    if( d[14] == 0x00 ) printf(",0　緊急車両フラグ");
-    else{printf(",-");}
+//    if( d[14] == 0x00 ) printf(",0　緊急車両フラグ");
+//    else{printf(",-");}
     /* 予約 1byte 予約領域(固定値 0x00) */
     // if( d[15] == 0x00 ) printf(",0");
     //   else{printf(",-");}
@@ -920,8 +920,6 @@ int V2V_Dataframe(unsigned long *d){
 int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム */
 
 //printf("    I2V_Dataframe   ");
-    
-//if((d[27]>>4)==1){
 
     if((((d[20]>>7)<<7)^d[20])==6){
         /*車速*/
@@ -933,8 +931,8 @@ int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム *
         }
         //                printf("\n");
     }
-//    if((((d[20]>>7)<<7)^d[20])==3){
-//        if((d[16]>>5)==2){
+    if((((d[20]>>7)<<7)^d[20])==3){
+        if((d[16]>>5)==2){
             /*メッセージ種別コード*/
             //            printf("%lu",(d[16]>>5));
             /*メッセージバージョン*/
@@ -942,7 +940,7 @@ int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム *
             /*予備1*/
             //            printf(",%lu",(((d[16]>>1)<<1)^d[16]));
             /*都道府県コード*/
-            //            printf(",%lu",d[17]);
+                        printf(",都道府県コード：%lu",d[17]);
             /*無線機ID*/
             //            printf(",%lu",((d[18]<<8)|d[19]));
             /*運用区分コード*/
@@ -993,7 +991,7 @@ int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム *
             //            printf(",%lu",d[47]>>7);
             /*予備7*/
             /*信号通行方向情報*/
-            printf(",%lu",d[48]);
+            printf(",信号通行方向情報：%lu",d[48]);
             /*車灯器情報ポインタ:1*/
             //            printf(",%lu",d[49]<<8|d[50]);
             /*車灯器情報ポインタ:2*/
@@ -1064,9 +1062,8 @@ int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム *
             //            printf(",L%lu",((d[94]>>4)<<4)^d[94]);
             //printf("DEBUG : k = %d", k);
             printf("\n");
-//        } /* if((d[16]>>5)==2) */
-//    } /* if((((d[20]>>7)<<7)^d[20])==3) */
-//} /* if((d[27]>>4)==1) */
+        } /* if((d[16]>>5)==2) */
+    } /* if((((d[20]>>7)<<7)^d[20])==3) */
 
     return 0;
 }
