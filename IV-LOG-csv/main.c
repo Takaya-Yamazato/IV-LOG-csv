@@ -10,8 +10,8 @@
 #include <stdlib.h>
 
 int Header_Information(unsigned long d[100000]); /* ヘッダ情報 16 Byte （車車間，路車間で共通）*/
-int V2V_Dataframe(unsigned long    d[100000]); /* 車車間通信のデータフレーム */
-int I2V_Dataframe(unsigned long    d[100000]); /* 路車間通信のデータフレーム */
+int V2V_Dataframe(unsigned long d[100000]); /* 車車間通信のデータフレーム */
+int I2V_Dataframe(unsigned long d[100000], int block_size); /* 路車間通信のデータフレーム */
 
 int main(int argc, char *argv[] )
 {
@@ -19,7 +19,7 @@ int main(int argc, char *argv[] )
     //    int text;
     unsigned long    c[100000], count;
     char buff[2048];
-    int i,k;
+    int i,k, data_length, block_size;
     FILE *fp;
     fpos_t ft;
     unsigned long long file_size;
@@ -49,18 +49,17 @@ int main(int argc, char *argv[] )
 //    printf("SEEK_SETのファイルポインタの位置は「%lld」です。\n",ft);
     
     for ( k = 0 ; k < (unsigned long long)file_size/128 ; ++k ){
-        //    for ( k = 0 ;  ; k = k+128 ){
+
         fseek(fp,k*128,SEEK_SET);
         //ファイルポインタの位置を取得
         fgetpos(fp,&ft);
 //        printf("ファイルポインタの位置は「%lld」です。ｋ＝%d\n",ft, k);
         
-        count = fread(buff, sizeof(char), 128, fp);
+        count = fread(buff, sizeof(char), 16, fp);
         
-        for( i = 0; i < 128 ; ++i ){
+        for( i = 0; i < 16 ; ++i ){
             c[i] = buff[i];
             if (c[i] > 0xFFFFFFFFFFFFFF00 ){ c[i] = c[i] ^ 0xFFFFFFFFFFFFFF00 ;}
-//            c[128*k+i] = fgetc( fp );
 //            printf("\nd[%d,%d] %lX %lu %lu\n",k,i, c[i], c[i], count);
             if( c[i] == EOF ){
                 break;
@@ -70,7 +69,25 @@ int main(int argc, char *argv[] )
         
         /* ここから三谷くんのソースファイルからコピー */
         
-        Header_Information(c);  /* 共通ヘッダ情報 */
+        data_length = Header_Information(c);  /* 共通ヘッダ情報 */
+        printf( "%lu/%lu/%lu/%lu:%lu:%5lu", c[0] << 8 | c[1],c[2],c[3],c[4],c[5],c[6] << 8 | c[7]);
+        //       必要ブロック数 =(Int)(((路車間メッセージのデータサイズ) + 15) ÷ 128) + 1
+        block_size =  (data_length + 15)/128 + 1 ;
+        printf( ", %d %d データ長：%d", block_size, (data_length + 15)/128 + 1, data_length);
+
+        //ファイルポインタの位置を再取得
+        fgetpos(fp,&ft);
+        count = fread(buff, sizeof(char), 112+128*block_size, fp);
+        k = k + block_size - 1 ;
+
+        for( i = 0; i < 112+128*block_size ; ++i ){
+            c[i+16] = buff[i];
+            if (c[i+16] > 0xFFFFFFFFFFFFFF00 ){ c[i+16] = c[i+16] ^ 0xFFFFFFFFFFFFFF00 ;}
+//                        printf("\nd[%d,%d] %lX %lu %lu\n",k,i, c[i+16], c[i+16], count);
+            if( c[i] == EOF ){
+                break;
+            }
+        }/* for( i = 0; i < 112+128*j ; ++i ) */
         
         if((c[38] >> 4) > 9){
             //        if(c[12]==0x02){
@@ -86,7 +103,7 @@ int main(int argc, char *argv[] )
             //        }
         }
         
-        I2V_Dataframe(c);       /* 路車間通信のデータフレーム */
+        I2V_Dataframe(c, block_size);       /* 路車間通信のデータフレーム */
         
         
         /* ここまで三谷くんのソースファイルからコピー */
@@ -110,10 +127,10 @@ int main(int argc, char *argv[] )
 int Header_Information(unsigned long *d){
     /* ヘッダ情報（16 byte）*/
     /* パケット受信時の PC 日時(JST) 8byte 年/月/日/時:分:ミリ秒 */
-    printf( "%lu/%lu/%lu/%lu:%lu:%5lu", d[0] << 8 | d[1],d[2],d[3],d[4],d[5],d[6] << 8 | d[7]);
+//    printf( "%lu/%lu/%lu/%lu:%lu:%5lu", d[0] << 8 | d[1],d[2],d[3],d[4],d[5],d[6] << 8 | d[7]);
     /* データ長 4byte*/
-    printf( ", データ長:%lu%lu%lu%lu", d[8],d[9],d[10],d[11]); 
-    //printf( ",%lu", d[8] << 24 | d[9] << 16 | d[10] << 8 | d[11]);
+//    printf( ", データ長:%lu%lu%lu%lu", d[8],d[9],d[10],d[11]);
+//    printf( ", データ長：%lu", d[8] << 24 | d[9] << 16 | d[10] << 8 | d[11]);
     /* 車輌種別 1byte 0x00:他車輌，0x02:自車輌，0x01：固定値（路車間）*/
 //    switch(d[12]) {
 //        case 0x00 : printf(",0 他車輌,");
@@ -139,7 +156,7 @@ int Header_Information(unsigned long *d){
     // if( d[15] == 0x00 ) printf(",0");
     //   else{printf(",-");}
     
-    return 0;
+    return (int)(d[8] << 24 | d[9] << 16 | d[10] << 8 | d[11]) ;
 }
 
 int V2V_Dataframe(unsigned long *d){
@@ -917,7 +934,7 @@ int V2V_Dataframe(unsigned long *d){
     return 0;
 }
 
-int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム */
+int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデータフレーム */
 
 //printf("    I2V_Dataframe   ");
 
@@ -934,7 +951,7 @@ int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム *
     if((((d[20]>>7)<<7)^d[20])==3){
         if((d[16]>>5)==2){
             /*メッセージ種別コード*/
-            //            printf("%lu",(d[16]>>5));
+            //            printf("メッセージ種別コード：%lu",(d[16]>>5));
             /*メッセージバージョン*/
             //            printf(",%lu",(((d[16]>>5)<<5)^d[16])>>1);
             /*予備1*/
@@ -946,7 +963,7 @@ int I2V_Dataframe(unsigned long *d){/* 路車間通信のデータフレーム *
             /*運用区分コード*/
             //            printf(",%lu",d[20]>>7);
             /*メッセージID*/
-            //            printf(",%lu",((d[20]>>7)<<7)^d[20]);
+            printf(",メッセージID：%lu",((d[20]>>7)<<7)^d[20]);
             /*インクリメントカウンタ*/
             //            printf(",%lu",d[21]);
             /*送信日*/
