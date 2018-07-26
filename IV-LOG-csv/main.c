@@ -935,8 +935,15 @@ int V2V_Dataframe(unsigned long *d){
 }
 
 int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデータフレーム */
-    int i, j, k, number_of_vehicles;
-    
+    int i, j, k, l, offset;
+    int message_id ; /*メッセージID*/
+    int number_of_vehicles; /* 四輪情報格納数 */
+    int number_of_vehicle_signals; /* 車灯器数 */
+    int number_of_pedistrian_signals; /* 歩灯器数 */
+    int number_of_connection_I;      /* 接続方路数(I) */
+    int number_of_service_direction_J;   /*サービス方路数(J)*/
+    int color_K = 0, color_L ; /* 灯色出力変化数　車灯器(K)，歩灯器（L） */
+
     //printf("    I2V_Dataframe   ");
     
     /* 共通ヘッダ */
@@ -954,6 +961,7 @@ int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデー�
     //            printf(",%lu",d[20]>>7);
     /*メッセージID*/
     printf(",メッセージID：%lu",((d[20]>>7)<<7)^d[20]);
+    message_id = (int)( ((d[20]>>7)<<7)^d[20] ) ;
     /*インクリメントカウンタ*/
     //            printf(",%lu",d[21]);
     /*送信日*/
@@ -977,9 +985,9 @@ int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデー�
 
     /* メッセージID=6 車輌検知情報 */
     
-    if((((d[20]>>7)<<7)^d[20])==6){
+    if( message_id == 6){
         /* 四輪検知数上限フラグ + 四輪情報格納数 */
-        number_of_vehicles = (int)((d[56]>>7)<<7)^d[56] ;
+        number_of_vehicles = (int)( ((d[56]>>7)<<7)^d[56] );
         printf(",四輪情報格納数：%d",number_of_vehicles);
         for( i=0; i<number_of_vehicles; i++){
         /*車速*/
@@ -1001,9 +1009,9 @@ int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデー�
     
     
     
-    /* メッセージID=2 サービス支援情報 */
+    /* メッセージID=3 信号情報 */
     
-    if((((d[20]>>7)<<7)^d[20])==3){
+    if( message_id == 3){
         if((d[16]>>5)==2){
 
             /*都道府県コード*/
@@ -1017,55 +1025,71 @@ int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデー�
             //            printf(",%lu",d[40]);
             /*イベントカウンタ*/
             //            printf(",%lu",d[41]);
+            printf("\n");
             /*車灯器数*/
-            //            printf(",%llu",d[42]);
+                        printf(",車灯器数：%lu",d[42]);
+            number_of_vehicle_signals = (int)(d[42]);  /* 車灯器数 */
             /*歩灯器数*/
-            //            printf(",%lu",d[43]);
+                        printf(",歩灯器数：%lu",d[43]);
+            number_of_pedistrian_signals = (int)(d[43]); /* 歩灯器数 */
             /*接続方路数(I)*/
-            //            printf(",I%lu",d[44]);
+                        printf(",接続方路数（I）：%lu",d[44]);
+            number_of_connection_I = (int)(d[44]);
             /*サービス方路数(J)*/
-            //            printf(",J%lu",d[45]);
+                       printf(",サービス方路数（J）：%lu\n",d[45]);
+            number_of_service_direction_J = (int)(d[45]);
+
+            printf("\n");
+
+            for( j=0; j<number_of_service_direction_J; j++){
             /*方路ID*/
-            //            printf(",H%llu",d[46]);
+            printf(",方路ID %d：%lu",j,d[46+j]);
             /*信号通行方向情報有無フラグ*/
             //            printf(",%lu",d[47]>>7);
             /*予備7*/
             /*信号通行方向情報*/
-            printf(",信号通行方向情報：%lu",d[48]);
-            /*車灯器情報ポインタ:1*/
-            //            printf(",%lu",d[49]<<8|d[50]);
-            /*車灯器情報ポインタ:2*/
-            //            printf(",%lu",d[51]<<8|d[52]);
-            /*車灯器情報ポインタ:3*/
-            //            printf(",%lu",d[53]<<8|d[54]);
-            /*車灯器情報ポインタ:4*/
-            //            printf(",%lu",d[55]<<8|d[56]);
-            /*車灯器情報ポインタ:5*/
-            //            printf(",%lu",d[57]<<8|d[58]);
-            /*歩灯器情報ポインタ:1*/
-            //            printf(",%lu",d[59]<<8|d[60]);
-            /*歩灯器情報ポインタ:2*/
-            //            printf(",%lu",d[61]<<8|d[62]);
-            /*歩灯器情報ポインタ:3*/
-            //            printf(",%lu",d[63]<<8|d[64]);
-            /*歩灯器情報ポインタ:4*/
-            //            printf(",%lu",d[65]<<8|d[66]);
-            /*歩灯器情報ポインタ:5*/
-            //            printf(",%lu",d[67]<<8|d[68]);
+            printf(",信号通行方向情報：%lu",d[48+j]);
+            
+                for( i=0; i<number_of_connection_I; i++){
+                    /*車灯器情報ポインタ:*/
+                        printf(",車灯器情報ポインタ：%lu",d[49+i+j]<<8|d[50+i+j]);
+                }//for( i=0; i<number_of_service_direction; i++)
+            
+                for( i=0; i<number_of_connection_I; i++){
+                    /*歩灯器情報ポインタ:*/
+                        printf(",歩灯器情報ポインタ：%lu",d[51+i+number_of_connection_I+j]<<8|d[52+i+number_of_connection_I+j]);
+                }//for( i=0; i<number_of_connection_I; i++)
+            }//for( j=0; j<number_of_service_direction_J; j++)
+
+            printf("\n");
+            
+            /* 車灯器数 */
+            offset = number_of_connection_I + number_of_connection_I+number_of_service_direction_J ;
+            for ( j=0; j < number_of_vehicle_signals ; j++){
             /*車灯器ID*/
-            //            printf(",%lu",d[69]>>4);
+                printf(",車灯器ID %d：%lu",j,d[53+offset+j]>>4);
             /*灯色出力変化数(K)*/
-            //            printf(",K%llu",((d[69]>>4)<<4)^d[69]);
-            /*1丸信号灯色表示*/
-            printf(",1丸信号灯色表示：%lu",d[70]);
-            /*1青矢信号表示方向*/
-            //            printf(",%lu",d[71]);
-            /*1カウントダウン停止フラグ*/
-            //            printf(",%lu",d[72]>>7);
-            /*1最小残秒数(0.1秒)*/
-            //            printf(",%lf",(((((d[72]>>7)<<7)^d[72])<<8)|d[73])*0.1);
-            /*1最大残秒数(0.1秒)*/
-            //            printf(",%lf",(d[74]|d[75])*0.1);
+                printf(",K%lu",((d[54+offset+j]>>4)<<4)^d[54+offset+j]);
+                printf("\n");
+                
+                color_K=(int)( ((d[54+offset+j]>>4)<<4)^d[54+offset+j] ) ;
+                for ( k=0; k < color_K ; k++){
+                    /*1丸信号灯色表示*/
+                    printf(",丸信号灯色表示：%lu",d[55+offset+j+k]);
+                    /*1青矢信号表示方向*/
+                    printf(",青矢信号表示方向：%lu",d[56+offset+j+k]);
+                    /*1カウントダウン停止フラグ*/
+                    printf(",カウントダウン停止フラグ：%lu",d[57+offset+j+k]>>7);
+                    /*1最小残秒数(0.1秒)*/
+                    printf(",最小残秒数(0.1秒)：%lf",(((((d[58+offset+j+k]>>7)<<7)^d[58+offset+j+k])<<8)|d[58+offset+j+k])*0.1);
+                    /*1最大残秒数(0.1秒)*/
+                    printf(",最大残秒数(0.1秒)：%lf",(d[59+offset+j+k]|d[59+offset+j+k])*0.1);
+                    
+                    printf("\n");
+                }
+            
+                
+            }
             /*2丸信号灯色表示*/
             //            printf(",%llu",d[76]);
             /*2青矢信号表示方向*/
@@ -1096,10 +1120,31 @@ int I2V_Dataframe(unsigned long *d, int block_size){/* 路車間通信のデー�
             //            printf(",%lf",(((((d[90]>>7)<<7)^d[90])<<8)|d[91])*0.1);
             /*4最大残秒数(0.1秒)*/
             //            printf(",%lf",(d[92]|d[93])*0.1);
+            
+            /* 歩灯器数 */
+
+            offset = number_of_connection_I + number_of_connection_I+number_of_service_direction_J + number_of_vehicle_signals + color_K ;
+            for ( j=0; j < number_of_pedistrian_signals ; j++){
             /*歩灯器ID*/
-            //            printf(",%lu",d[94]>>4);
+                        printf(",歩灯器ID %d：%lu",j,d[60+offset+j]>>4);
+                        printf("\n");
+                
             /*灯色出力変化数(L)*/
-            //            printf(",L%lu",((d[94]>>4)<<4)^d[94]);
+                printf(",灯色出力変化数(L)：%lu",((d[61+offset+j]>>4)<<4)^d[61+offset+j]);
+                color_L=(int)( ((d[61+offset+j]>>4)<<4)^d[61+offset+j] ) ;
+                for ( l=0; l < color_L ; l++){
+                    /* 歩行者信号表示 */
+                    printf(",%lu",d[62+offset+j+l]);
+                    /*カウントダウン停止フラグ*/
+                    printf(",カウントダウン停止フラグ：%lu",d[63+offset+j+l]>>7);
+                    /*最小残秒数(0.1秒)*/
+                    printf(",最小残秒数(0.1秒)：%lf",(((((d[64+offset+j+l]>>7)<<7)^d[64+offset+j+l])<<8)|d[64+offset+j+l])*0.1);
+                    /*最大残秒数(0.1秒)*/
+                    printf(",最大残秒数(0.1秒)：%lf",(d[65+offset+j+l]|d[65+offset+j+l])*0.1);
+                    
+                    printf("\n");
+                }
+            }
             //printf("DEBUG : k = %d", k);
             printf("\n");
         } /* if((d[16]>>5)==2) */
